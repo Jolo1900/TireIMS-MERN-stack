@@ -14,6 +14,9 @@ dotenv.config();
 
 const app = express();
 
+// Enable trust proxy for Vercel/Railway reverse proxies & rate limiting
+app.set("trust proxy", 1);
+
 // Security & Body Middlewares
 app.use(cors({ origin: true, credentials: true }));
 app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -28,14 +31,22 @@ app.use(async (req, res, next) => {
     next();
   } catch (err) {
     console.error("Serverless middleware error:", err.message);
-    res.status(500).json({ message: "Database connection failed" });
+    res.status(500).json({ message: "Database connection failed: " + err.message });
   }
 });
 
+// Dual-mount routes for both /api/* and direct /* paths (fixes Vercel rewrite URL stripping)
 app.use("/api/products", productRoutes);
+app.use("/products", productRoutes);
+
 app.use("/api/suppliers", supplierRoutes);
+app.use("/suppliers", supplierRoutes);
+
 app.use("/api/transactions", transactionRoutes);
+app.use("/transactions", transactionRoutes);
+
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("tireIMS backend is running");

@@ -4,13 +4,14 @@ import { loginUser } from "../controllers/authController.js";
 
 const router = express.Router();
 
-// Rate Limiter: Limit to 10 login requests per 15 minutes per IP address to prevent brute-force attacks
+// Rate Limiter: Safe for proxy/serverless environments like Vercel and Railway
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 attempts per window
+  max: 15, // Max 15 attempts
   message: { message: "Too many login attempts from this IP, please try again after 15 minutes" },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false }
 });
 
 router.post("/login", loginLimiter, loginUser);
