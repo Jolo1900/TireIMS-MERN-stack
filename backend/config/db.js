@@ -7,7 +7,8 @@ const connectDB = async () => {
     return;
   }
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const mongoUri = process.env.MONGO_URI || "mongodb+srv://galleros_IMS:LhaQeT7jxn9Pr9qT@cluster0.fb0ht0l.mongodb.net/?appName=Cluster0";
+    const conn = await mongoose.connect(mongoUri);
     isConnected = true;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {

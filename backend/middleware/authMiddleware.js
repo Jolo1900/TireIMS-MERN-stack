@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+const JWT_SECRET = process.env.JWT_SECRET || "tireims_super_secret_key_2026";
+
 // Verify authorization header token and populate req.user
 export const protect = async (req, res, next) => {
   let token;
@@ -14,7 +16,7 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Decode token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
 
       // Fetch user from database and attach to request
       req.user = await User.findById(decoded.id).select("-password");

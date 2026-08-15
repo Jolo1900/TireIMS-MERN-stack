@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+const JWT_SECRET = process.env.JWT_SECRET || "tireims_super_secret_key_2026";
+
 // Login controller
 export const loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -20,7 +22,7 @@ export const loginUser = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "30d" }
     );
 
