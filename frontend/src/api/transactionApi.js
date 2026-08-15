@@ -1,12 +1,19 @@
 import axios from "axios";
 
-const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (import.meta.env.PROD) {
+    return "";
+  }
+  return "http://localhost:5000";
+};
 
 const API = axios.create({
-  baseURL: `${BASE}/api/transactions`,
+  baseURL: `${getBaseURL()}/api/transactions`,
 });
 
-// Inject JWT token into Authorization header automatically
 API.interceptors.request.use((config) => {
   const token = sessionStorage.getItem("tireims_token");
   if (token) {
