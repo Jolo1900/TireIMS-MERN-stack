@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const LIVE_BACKEND_URL = "https://tireims-mern-stack-production-e9c5.up.railway.app";
+const LIVE_BACKEND_URL = "https://tireims-mern-stack-production-522b.up.railway.app";
 
 export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
