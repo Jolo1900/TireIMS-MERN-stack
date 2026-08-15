@@ -19,6 +19,40 @@ function PosView({ user }) {
   const [error, setError] = useState("");
   const [requireReceipt, setRequireReceipt] = useState(true);
   const [notification, setNotification] = useState(null);
+  
+  // Service Inputs
+  const [serviceName, setServiceName] = useState("");
+  const [servicePrice, setServicePrice] = useState("");
+
+  const handleAddService = (e) => {
+    e.preventDefault();
+    if (!serviceName.trim() || !servicePrice) {
+      setError("Please enter service name and price.");
+      return;
+    }
+    const price = Number(servicePrice);
+    if (isNaN(price) || price < 0) {
+      setError("Price must be a positive number.");
+      return;
+    }
+
+    const serviceItem = {
+      product: {
+        _id: `service-${Date.now()}`,
+        name: serviceName.trim(),
+        brand: "Service",
+        sellingPrice: price,
+        size: "N/A",
+        isService: true
+      },
+      quantity: 1
+    };
+
+    setCart([...cart, serviceItem]);
+    setServiceName("");
+    setServicePrice("");
+    setError("");
+  };
 
   const showNotice = (type, text) => {
     setNotification({ type, text });
@@ -35,7 +69,8 @@ function PosView({ user }) {
     try {
       setLoading(true);
       const res = await getProducts();
-      setProducts(res.data);
+      const items = Array.isArray(res.data) ? res.data : res.data?.items || res.data?.data || [];
+      setProducts(items);
     } catch (err) {
       console.error("Failed to load POS products", err);
     } finally {
@@ -67,7 +102,7 @@ function PosView({ user }) {
       if (item.product._id === productId) {
         const newQty = item.quantity + delta;
         if (newQty <= 0) return null;
-        if (newQty > item.product.quantity) {
+        if (!item.product.isService && newQty > item.product.quantity) {
           setError(`Only ${item.product.quantity} units are in stock.`);
           setTimeout(() => setError(""), 3000);
           return item;
@@ -113,15 +148,26 @@ function PosView({ user }) {
       setError("");
       // Batch POS checkout endpoint
       const payload = {
-        items: cart.map((item) => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-        })),
+        items: cart.map((item) => {
+          if (item.product.isService) {
+            return {
+              isService: true,
+              productName: item.product.name,
+              quantity: item.quantity,
+              sellingPrice: item.product.sellingPrice
+            };
+          } else {
+            return {
+              productId: item.product._id,
+              quantity: item.quantity,
+            };
+          }
+        }),
         cashierName: user?.username || "Cashier",
         notes: "POS Checkout Sales Transaction",
       };
 
-      const token = localStorage.getItem("tireims_token");
+      const token = sessionStorage.getItem("tireims_token");
       const res = await axios.post("http://localhost:5000/api/transactions/pos", payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -134,7 +180,7 @@ function PosView({ user }) {
             date: new Date(),
             cashier: user?.username || "Cashier",
             items: cart.map((item) => ({
-              name: `${item.product.brand} ${item.product.name}`,
+              name: item.product.isService ? item.product.name : `${item.product.brand} ${item.product.name}`,
               size: item.product.size,
               quantity: item.quantity,
               price: item.product.sellingPrice,
@@ -211,6 +257,41 @@ function PosView({ user }) {
               placeholder="Search catalog by brand, model or size..."
               className="form-control"
             />
+          </div>
+
+          <div className="glass-panel" style={{ padding: "1.25rem", marginTop: "1rem" }}>
+            <h4 style={{ margin: "0 0 0.75rem 0", fontSize: "0.95rem", fontWeight: "700" }}>⚙️ Add Rendered Service</h4>
+            <form onSubmit={handleAddService} style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+              <div style={{ flex: 2, minWidth: "150px" }}>
+                <input
+                  type="text"
+                  placeholder="Enter service name (e.g. Tire Vulcanizing)"
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  className="form-control"
+                  style={{ padding: "0.5rem" }}
+                  required
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: "100px" }}>
+                <input
+                  type="number"
+                  placeholder="Price (₱)"
+                  value={servicePrice}
+                  onChange={(e) => setServicePrice(e.target.value)}
+                  className="form-control"
+                  style={{ padding: "0.5rem" }}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <button type="submit" className="btn btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}>
+                  ＋ Add Service
+                </button>
+              </div>
+            </form>
           </div>
 
           {loading ? (

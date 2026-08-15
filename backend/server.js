@@ -1,22 +1,35 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from "helmet";
 import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import { seedDefaultUsers } from "./controllers/authController.js";
+import { seedDefaultProducts } from "./controllers/productController.js";
 
 dotenv.config();
 connectDB().then(() => {
-  // Seed admin & cashier user credentials
+  // Seed default admin/cashier credentials & tire inventory products
   seedDefaultUsers();
+  seedDefaultProducts();
 });
 
 const app = express();
 
-app.use(cors());
+// Enable CORS before Helmet so cross-origin requests are authorized
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+// Configure Helmet for API & Cross-Origin resource sharing compatibility
+app.use(helmet({
+  crossOriginResourcePolicy: false
+}));
+
 app.use(express.json());
 
 app.use("/api/products", productRoutes);

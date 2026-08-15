@@ -31,7 +31,8 @@ function SupplierView() {
     try {
       setLoading(true);
       const res = await getSuppliers();
-      setSuppliers(res.data);
+      const items = Array.isArray(res.data) ? res.data : res.data?.items || res.data?.data || [];
+      setSuppliers(items);
     } catch (error) {
       showNotice("error", "Failed to fetch suppliers.");
     } finally {

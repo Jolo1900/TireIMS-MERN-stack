@@ -25,8 +25,8 @@ function ReportsView() {
         getTransactions(),
         getProducts(),
       ]);
-      setTransactions(txRes.data);
-      setProducts(prodRes.data);
+      setTransactions(Array.isArray(txRes.data) ? txRes.data : txRes.data?.items || txRes.data?.data || []);
+      setProducts(Array.isArray(prodRes.data) ? prodRes.data : prodRes.data?.items || prodRes.data?.data || []);
     } catch (err) {
       console.error("Failed to load report data", err);
     } finally {

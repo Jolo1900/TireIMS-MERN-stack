@@ -19,7 +19,7 @@ function LoginView({ onLoginSuccess }) {
       setError("");
       const res = await login({ username, password });
       if (res.data.success) {
-        localStorage.setItem("tireims_token", res.data.token);
+        sessionStorage.setItem("tireims_token", res.data.token);
         onLoginSuccess(res.data.user);
       } else {
         setError("Login failed.");

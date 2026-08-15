@@ -4,7 +4,7 @@ import Product from "../models/Product.js";
 // GET all transactions
 export const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find().sort({ createdAt: -1 });
+    const transactions = await Transaction.find().sort({ createdAt: -1 }).lean();
     res.status(200).json(transactions);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -81,6 +81,19 @@ export const createPosTransaction = async (req, res) => {
     
     // Phase 1: Verification
     for (const item of items) {
+      if (item.isService) {
+        const saleQty = Number(item.quantity);
+        if (isNaN(saleQty) || saleQty <= 0) {
+          return res.status(400).json({ message: `Invalid quantity for service ${item.productName}` });
+        }
+        const price = Number(item.sellingPrice);
+        if (isNaN(price) || price < 0) {
+          return res.status(400).json({ message: `Invalid price for service ${item.productName}` });
+        }
+        productsToUpdate.push({ isService: true, productName: item.productName, saleQty, sellingPrice: price });
+        continue;
+      }
+
       const product = await Product.findById(item.productId);
       if (!product) {
         return res.status(404).json({ message: `Product with ID ${item.productId} not found` });
@@ -103,6 +116,21 @@ export const createPosTransaction = async (req, res) => {
     // Phase 2: Save updates and write logs
     const createdLogs = [];
     for (const entry of productsToUpdate) {
+      if (entry.isService) {
+        const { productName, saleQty, sellingPrice } = entry;
+        const transaction = await Transaction.create({
+          productId: undefined,
+          productName: `Service: ${productName}`,
+          type: "Sale",
+          quantity: -saleQty,
+          costPrice: 0,
+          sellingPrice: sellingPrice,
+          notes: notes || `POS Service by ${cashierName || "Cashier"}`,
+        });
+        createdLogs.push(transaction);
+        continue;
+      }
+
       const { product, saleQty } = entry;
       
       product.quantity -= saleQty;

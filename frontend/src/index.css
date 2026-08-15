@@ -1,68 +1,66 @@
-:root {
+@import "tailwindcss";
+
+:root, html.light, body.light, .light-theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   
-  /* Core Color Palette - Slate & Indigo & Emerald/Amber/Rose */
-  --bg-app: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.7);
+  /* Core Color Palette - Crisp Light Mode */
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
   --bg-sidebar: #0f172a;
   
-  --border-color: rgba(226, 232, 240, 0.8);
-  --text-main: #334155;
+  --border-color: #cbd5e1;
+  --text-main: #0f172a;
   --text-muted: #64748b;
-  --text-inverse: #f8fafc;
+  --text-inverse: #ffffff;
   
-  /* Accents */
   --primary: #4f46e5;
   --primary-hover: #4338ca;
-  --primary-light: rgba(79, 70, 229, 0.1);
-  --primary-border: rgba(79, 70, 229, 0.3);
+  --primary-light: rgba(79, 70, 229, 0.08);
+  --primary-border: rgba(79, 70, 229, 0.25);
   
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.1);
+  --success: #059669;
+  --success-bg: rgba(16, 185, 129, 0.12);
   
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.1);
+  --warning: #d97706;
+  --warning-bg: rgba(245, 158, 11, 0.12);
   
-  --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.1);
+  --danger: #dc2626;
+  --danger-bg: rgba(239, 68, 68, 0.12);
   
-  /* Glassmorphism settings */
-  --glass-blur: 12px;
-  --glass-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.08);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-blur: 8px;
+  --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  --glass-border: 1px solid #e2e8f0;
   
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-app: #0b0f19;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --bg-sidebar: #030712;
-    
-    --border-color: rgba(31, 41, 55, 0.6);
-    --text-main: #e2e8f0;
-    --text-muted: #94a3b8;
-    --text-inverse: #0f172a;
-    
-    --primary: #818cf8;
-    --primary-hover: #6366f1;
-    --primary-light: rgba(129, 140, 248, 0.15);
-    --primary-border: rgba(129, 140, 248, 0.4);
-    
-    --success: #34d399;
-    --success-bg: rgba(52, 211, 153, 0.15);
-    
-    --warning: #fbbf24;
-    --warning-bg: rgba(251, 191, 36, 0.15);
-    
-    --danger: #f87171;
-    --danger-bg: rgba(248, 113, 113, 0.15);
-    
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-  }
+html.dark, body.dark, .dark-theme, [data-theme="dark"] {
+  --bg-app: #0b0f19;
+  --bg-card: #151c2c;
+  --bg-sidebar: #030712;
+  
+  --border-color: #27354a;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+  
+  --primary: #818cf8;
+  --primary-hover: #6366f1;
+  --primary-light: rgba(129, 140, 248, 0.15);
+  --primary-border: rgba(129, 140, 248, 0.4);
+  
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.15);
+  
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.15);
+  
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.15);
+  
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-border: 1px solid #27354a;
 }
 
 * {
@@ -1204,3 +1202,107 @@ body {
     font-size: 0.75rem;
   }
 }
+
+/* Mobile Card Grid Fallback (<768px) & Sticky Tables */
+@media (max-width: 768px) {
+  .desktop-table-wrapper {
+    display: none !important;
+  }
+  .mobile-card-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Global Search Item Hover Effect */
+.search-item-row:hover {
+  background-color: var(--primary-light);
+}
+
+/* Stock Pill Badges */
+.stock-pill {
+  transition: all 0.2s ease;
+}
+
+/* ==========================================================================
+   MOBILE-FIRST RESPONSIRENESS & TOUCH OPTIMIZATION SYSTEM
+   ========================================================================== */
+
+/* 1. Global Box-Sizing and Zero Horizontal Overflow */
+*, *::before, *::after {
+  box-sizing: border-box !important;
+}
+
+html, body, #root, .app-container {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+/* 2. Prevent iOS Safari Input Auto-Zoom (16px Min Font Size on Mobile Inputs) */
+@media (max-width: 768px) {
+  input, select, textarea, .form-control {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+  }
+}
+
+/* 3. Minimum 44px Touch Target Size for Mobile Accessibility */
+@media (max-width: 768px) {
+  button, .btn, a, input[type="checkbox"], input[type="radio"], .sidebar-link, .bell-button {
+    min-height: 44px;
+  }
+}
+
+/* 4. Fluid Flex & Grid Containers for Dashboard KPIs & Filters */
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.filter-group {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+/* 5. Mobile Data Table Fallback to Stacked Cards (<768px) */
+@media (max-width: 768px) {
+  .desktop-table-wrapper {
+    display: none !important;
+  }
+  .mobile-card-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+  .main-content {
+    padding: 1rem 0.75rem 80px 0.75rem !important;
+  }
+}
+
+/* 6. Touch-Optimized Fullscreen/Large Mobile Modals */
+@media (max-width: 640px) {
+  .modal-container {
+    width: 96vw !important;
+    max-width: 100vw !important;
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+    margin-top: auto !important;
+  }
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+}
+
+

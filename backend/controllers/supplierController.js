@@ -3,7 +3,7 @@ import Supplier from "../models/Supplier.js";
 // GET all suppliers
 export const getSuppliers = async (req, res) => {
   try {
-    const suppliers = await Supplier.find().sort({ name: 1 });
+    const suppliers = await Supplier.find().sort({ name: 1 }).lean();
     res.status(200).json(suppliers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -23,7 +23,7 @@ export const createSupplier = async (req, res) => {
 // GET supplier by ID
 export const getSupplierById = async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
+    const supplier = await Supplier.findById(req.params.id).lean();
     if (!supplier) {
       return res.status(404).json({ message: "Supplier not found" });
     }

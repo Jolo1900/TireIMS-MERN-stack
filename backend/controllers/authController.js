@@ -11,8 +11,9 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // Direct password match (simple and reliable for local setup)
-    if (user.password !== password) {
+    // Verify password using bcrypt match
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 

@@ -20,7 +20,8 @@ function TransactionsView({ user }) {
     try {
       setLoading(true);
       const res = await getTransactions();
-      setTransactions(res.data);
+      const items = Array.isArray(res.data) ? res.data : res.data?.items || res.data?.data || [];
+      setTransactions(items);
     } catch (error) {
       console.error("Failed to fetch transactions list", error);
     } finally {
@@ -183,7 +184,8 @@ function TransactionsView({ user }) {
           </p>
         ) : (
           <>
-            <div className="table-responsive">
+            {/* Desktop Table View */}
+            <div className="table-responsive desktop-table-wrapper">
               <table className="custom-table">
                 <thead>
                   <tr>
@@ -236,6 +238,81 @@ function TransactionsView({ user }) {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Stacked Card View Fallback (<768px) */}
+            <div className="mobile-card-grid" style={{ display: "none" }}>
+              {paginatedTx.map((tx) => {
+                const priceUsed = tx.type === "Sale" ? tx.sellingPrice : tx.costPrice;
+                const valueCalculated = Math.abs(tx.quantity) * priceUsed;
+                return (
+                  <div
+                    key={tx._id}
+                    className="glass-panel"
+                    style={{
+                      padding: "1rem",
+                      borderRadius: "12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.5rem",
+                      border: "1px solid var(--border-color)"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{tx.productName}</span>
+                      <span className={`stock-tag ${
+                        tx.type === "Restock" ? "stock-tag-ok" : tx.type === "Sale" ? "stock-tag-out" : "stock-tag-low"
+                      }`}>
+                        {tx.type}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                      {new Date(tx.createdAt).toLocaleDateString()} {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "0.5rem",
+                        fontSize: "0.85rem",
+                        backgroundColor: "var(--primary-light)",
+                        padding: "0.5rem 0.75rem",
+                        borderRadius: "8px",
+                        marginTop: "4px"
+                      }}
+                    >
+                      <div>
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>Qty Change: </span>
+                        <strong style={{ color: tx.quantity < 0 ? "var(--danger)" : "var(--success)" }}>
+                          {tx.quantity > 0 ? `+${tx.quantity}` : tx.quantity}
+                        </strong>
+                      </div>
+                      <div>
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>Total Value: </span>
+                        <strong>{formatCurrency(valueCalculated)}</strong>
+                      </div>
+                    </div>
+
+                    {tx.notes && (
+                      <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                        Notes: {tx.notes}
+                      </div>
+                    )}
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDeleteTransaction(tx._id)}
+                        className="btn btn-danger btn-sm"
+                        style={{ minHeight: "44px", marginTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        Delete & Revert Stock
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Pagination Controls */}
