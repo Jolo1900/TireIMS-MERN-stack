@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/suppliers",
+  baseURL: `${BASE}/api/suppliers`,
 });
 
 // Inject JWT token into Authorization header automatically
@@ -14,9 +16,6 @@ API.interceptors.request.use((config) => {
 });
 
 export const getSuppliers = () => API.get("/");
-
 export const createSupplier = (supplier) => API.post("/", supplier);
-
 export const updateSupplier = (id, supplier) => API.put(`/${id}`, supplier);
-
 export const deleteSupplier = (id) => API.delete(`/${id}`);
