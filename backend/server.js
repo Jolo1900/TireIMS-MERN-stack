@@ -17,18 +17,31 @@ const app = express();
 // Enable trust proxy for Vercel/Railway reverse proxies & rate limiting
 app.set("trust proxy", 1);
 
-// Security & Body Middlewares
-app.use(cors({ origin: true, credentials: true }));
+// Global Explicit CORS Middleware (handles preflight OPTIONS immediately with 204)
+app.use((req, res, next) => {
+  const origin = req.headers.origin || "*";
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+
+  // Handle preflight OPTIONS request immediately
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  next();
+});
+
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
-// DB Connection Middleware
+// Server DB Connection Middleware
 app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
-    console.error("Database middleware error:", err.message);
+    console.error("Database connection middleware error:", err.message);
     res.status(500).json({ message: "Database connection failed: " + err.message });
   }
 });
