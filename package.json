@@ -1,0 +1,8 @@
+{
+  "name": "tireims-monorepo",
+  "private": true,
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "build": "cd backend && npm install"
+  }
+}
