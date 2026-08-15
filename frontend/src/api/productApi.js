@@ -1,28 +1,25 @@
 import axios from "axios";
 
-const getBaseURL = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-  if (import.meta.env.PROD) {
-    return "";
-  }
+export const getBaseURL = () => {
+  const custom = sessionStorage.getItem("tireims_backend_url");
+  if (custom) return custom.replace(/\/$/, "");
+  if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+  if (import.meta.env.PROD) return "";
   return "http://localhost:5000";
 };
 
-const API = axios.create({
-  baseURL: `${getBaseURL()}/api/products`,
-});
-
-API.interceptors.request.use((config) => {
+const getClient = () => {
+  const instance = axios.create({
+    baseURL: `${getBaseURL()}/api/products`,
+  });
   const token = sessionStorage.getItem("tireims_token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
-  return config;
-});
+  return instance;
+};
 
-export const getProducts = () => API.get("/");
-export const createProduct = (product) => API.post("/", product);
-export const updateProduct = (id, product) => API.put(`/${id}`, product);
-export const deleteProduct = (id) => API.delete(`/${id}`);
+export const getProducts = () => getClient().get("/");
+export const createProduct = (product) => getClient().post("/", product);
+export const updateProduct = (id, product) => getClient().put(`/${id}`, product);
+export const deleteProduct = (id) => getClient().delete(`/${id}`);
