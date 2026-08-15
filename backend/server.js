@@ -1,6 +1,5 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import helmet from "helmet";
 import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -17,15 +16,19 @@ const app = express();
 // Enable trust proxy for Vercel/Railway reverse proxies & rate limiting
 app.set("trust proxy", 1);
 
-// Global Explicit CORS Middleware (handles preflight OPTIONS immediately with 204)
+// Strict Standard CORS Middleware for Production & Preview Vercel Domains
 app.use((req, res, next) => {
-  const origin = req.headers.origin || "*";
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 
-  // Handle preflight OPTIONS request immediately
+  // Respond immediately to OPTIONS preflight
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
@@ -35,7 +38,7 @@ app.use((req, res, next) => {
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
-// Server DB Connection Middleware
+// DB Connection Middleware
 app.use(async (req, res, next) => {
   try {
     await connectDB();
