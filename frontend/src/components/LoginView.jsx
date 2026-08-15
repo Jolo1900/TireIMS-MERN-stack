@@ -25,7 +25,14 @@ function LoginView({ onLoginSuccess }) {
         setError("Login failed.");
       }
     } catch (err) {
-      const errMsg = err.response?.data?.message || "Invalid credentials. Please try again.";
+      console.error("Login error details:", err);
+      const serverMsg = err.response?.data?.message;
+      const statusPrefix = err.response?.status ? `[HTTP ${err.response.status}] ` : "";
+      const errMsg = serverMsg 
+        ? `${statusPrefix}${serverMsg}` 
+        : err.message === "Network Error"
+        ? "Network Error: Unable to connect to backend server."
+        : `${statusPrefix}${err.message || "Invalid username or password"}`;
       setError(errMsg);
     } finally {
       setLoading(false);
