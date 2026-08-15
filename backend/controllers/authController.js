@@ -38,26 +38,43 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Seed default users if none exist
+// Seed/Reset default users to ensure credentials always work
 export const seedDefaultUsers = async () => {
   try {
-    const count = await User.countDocuments();
-    if (count === 0) {
-      await User.create([
-        {
-          username: "admin",
-          password: "admin123",
-          role: "Admin",
-        },
-        {
-          username: "cashier",
-          password: "cashier123",
-          role: "Cashier",
-        },
-      ]);
-      console.log("Database seeded: default admin and cashier accounts created.");
+    const adminUser = await User.findOne({ username: "admin" });
+    if (!adminUser) {
+      await User.create({
+        username: "admin",
+        password: "admin123",
+        role: "Admin",
+      });
+      console.log("Seeded default admin account.");
+    } else {
+      const isMatch = await adminUser.matchPassword("admin123");
+      if (!isMatch) {
+        adminUser.password = "admin123";
+        await adminUser.save();
+        console.log("Reset admin password to admin123.");
+      }
+    }
+
+    const cashierUser = await User.findOne({ username: "cashier" });
+    if (!cashierUser) {
+      await User.create({
+        username: "cashier",
+        password: "cashier123",
+        role: "Cashier",
+      });
+      console.log("Seeded default cashier account.");
+    } else {
+      const isMatch = await cashierUser.matchPassword("cashier123");
+      if (!isMatch) {
+        cashierUser.password = "cashier123";
+        await cashierUser.save();
+        console.log("Reset cashier password to cashier123.");
+      }
     }
   } catch (error) {
-    console.error("Error seeding users:", error.message);
+    console.error("Error seeding/resetting users:", error.message);
   }
 };
