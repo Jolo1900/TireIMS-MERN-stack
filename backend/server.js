@@ -22,20 +22,18 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
-// Serverless DB Connection & Auto-Seed Middleware
+// DB Connection Middleware
 app.use(async (req, res, next) => {
   try {
     await connectDB();
-    await seedDefaultUsers();
-    await seedDefaultProducts();
     next();
   } catch (err) {
-    console.error("Serverless middleware error:", err.message);
+    console.error("Database middleware error:", err.message);
     res.status(500).json({ message: "Database connection failed: " + err.message });
   }
 });
 
-// Dual-mount routes for both /api/* and direct /* paths (fixes Vercel rewrite URL stripping)
+// Dual-mount routes for both /api/* and direct /* paths
 app.use("/api/products", productRoutes);
 app.use("/products", productRoutes);
 
@@ -54,9 +52,16 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Connect DB & start server binding to 0.0.0.0 for Railway / persistent servers
+if (!process.env.VERCEL) {
+  connectDB().then(async () => {
+    await seedDefaultUsers();
+    await seedDefaultProducts();
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }).catch((err) => {
+    console.error("Failed to start server:", err.message);
   });
 }
 
